@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <?!= include('Styles') ?>
+</head>
+<body>
+  <label for="invoice">Invoice row</label>
+  <select id="invoice" disabled><option>Loading…</option></select>
+  <div class="hint">Add the row in the Invoices tab first. The list shows the latest 30 invoices.</div>
+
+  <div id="preview" style="display:none">
+    <div class="summary" id="summary"></div>
+    <div id="messages"></div>
+
+    <label for="period">Service period</label>
+    <input type="text" id="period">
+    <div class="hint">Proposed from the dates of the linked time entries.</div>
+
+    <label for="description">Service description</label>
+    <textarea id="description" placeholder="e.g. Coaching für ...&#10;&#10;Koordination und Vorbereitung sind inklusive"></textarea>
+    <div class="hint">Prefilled from the latest invoice sheet for the same quote in the output folder. Line breaks are kept.</div>
+
+    <div id="expenseBlock">
+      <label for="expenseLabel">Expenses line</label>
+      <input type="text" id="expenseLabel">
+    </div>
+
+    <label><input type="checkbox" id="draft" checked> Create a Gmail draft with the PDF attached</label>
+    <label id="ignoreBlock" style="display:none"><input type="checkbox" id="ignoreErrors"> Create the invoice despite the errors above</label>
+
+    <div class="actions">
+      <button class="primary" id="create">Create invoice</button>
+      <button onclick="google.script.host.close()">Close</button>
+      <span id="status"></span>
+    </div>
+    <div id="result"></div>
+  </div>
+
+<script>
+  var current = null;
+  var $ = function (id) { return document.getElementById(id); };
+
+  function esc(s) {
+    return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; });
+  }
+
+  function list(items, cls) {
+    if (!items.length) return '';
+    return '<ul class="msgs">' + items.map(function (m) { return '<li class="' + cls + '">' + esc(m) + '</li>'; }).join('') + '</ul>';
+  }
+
+  function fail(err) {
+    $('status').textContent = '';
+    $('create').disabled = false;
+    $('result').innerHTML = '<div class="result error">' + esc(err.message || err) + '</div>';
+  }
+
+  function loadPreview() {
+    $('preview').style.display = 'none';
+    $('result').innerHTML = '';
+    google.script.run.withSuccessHandler(showPreview).withFailureHandler(fail).getInvoicePreview($('invoice').value);
+  }
+
+  function showPreview(p) {
+    current = p;
+    $('summary').innerHTML = [
+      ['Client', p.client], ['Assignment', p.assignment], ['Invoice date', p.date],
+      ['Days × rate', p.days + ' × ' + p.dailyRate], ['Expenses', p.expenses],
+      ['Net amount', p.amount], ['Total incl. VAT', p.total]
+    ].map(function (r) { return '<div>' + esc(r[0]) + '</div><div>' + esc(r[1]) + '</div>'; }).join('');
+    var ok = !p.errors.length && !p.warnings.length ? '<p class="ok">No problems found.</p>' : '';
+    $('messages').innerHTML = list(p.errors, 'error') + list(p.warnings, 'warning') + list(p.info, 'info') + ok;
+    if (!p.templateConfigured) {
+      $('messages').innerHTML += '<p class="error">No invoice template is configured yet. Use Backoffice &gt; Settings.</p>';
+    }
+    $('period').value = p.servicePeriod;
+    $('description').value = p.description;
+    $('expenseLabel').value = p.expenseLabel;
+    $('expenseBlock').style.display = p.hasExpenses ? '' : 'none';
+    $('ignoreBlock').style.display = p.errors.length ? '' : 'none';
+    $('ignoreErrors').checked = false;
+    $('preview').style.display = '';
+  }
+
+  function create(allowDuplicate) {
+    if (current.errors.length && !$('ignoreErrors').checked) {
+      fail(new Error('Please fix the errors in the Invoices tab first, or confirm that you want to continue.'));
+      return;
+    }
+    $('create').disabled = true;
+    $('status').textContent = 'Creating invoice and PDF…';
+    $('result').innerHTML = '';
+    google.script.run.withSuccessHandler(done).withFailureHandler(fail).submitInvoice({
+      invoiceId: current.id,
+      servicePeriod: $('period').value.trim(),
+      description: $('description').value,
+      expenseLabel: $('expenseLabel').value.trim(),
+      createDraft: $('draft').checked,
+      ignoreErrors: $('ignoreErrors').checked,
+      allowDuplicate: !!allowDuplicate
+    });
+  }
+
+  function done(r) {
+    $('status').textContent = '';
+    $('create').disabled = false;
+    if (r.duplicate) {
+      $('result').innerHTML = '<div class="result warning">"' + esc(r.name) + '" already exists in the output folder. ' +
+        '<button onclick="create(true)">Create another version</button></div>';
+      return;
+    }
+    var html = '<div class="result"><b>Created:</b> ' + esc(r.name) +
+      '<br><a href="' + esc(r.pdfUrl) + '" target="_blank">Open PDF</a> · <a href="' + esc(r.sheetUrl) + '" target="_blank">Open sheet</a>';
+    if (r.draft) html += '<br>Gmail draft created' + (r.draft.recipient ? ' for ' + esc(r.draft.recipient) : ' (no recipient set)') + '.';
+    html += list(r.warnings, 'warning') + '</div>';
+    $('result').innerHTML = html;
+  }
+
+  $('invoice').addEventListener('change', loadPreview);
+  $('create').addEventListener('click', function () { create(false); });
+
+  google.script.run.withSuccessHandler(function (items) {
+    var sel = $('invoice');
+    sel.innerHTML = items.map(function (i) { return '<option value="' + esc(i.id) + '">' + esc(i.label) + '</option>'; }).join('');
+    sel.disabled = false;
+    if (items.length) loadPreview();
+  }).withFailureHandler(fail).getInvoiceList();
+</script>
+</body>
+</html>

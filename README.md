@@ -1,0 +1,121 @@
+# simsab-backoffice
+
+Internal tool to simplify and partly automate administrative work for my independent practice, starting with validated invoicing.
+
+It is a Google Apps Script bound to the Business Google Sheet. All data stays in the sheet. The script only helps and checks, so every step remains possible by hand.
+
+## What it does
+
+The script adds a **Backoffice** menu to the Business sheet.
+
+**Create invoice…** opens a dialog for one row of the Invoices tab. It shows the validation results for the row, proposes the service period from the linked time entries and prefills the description from the latest invoice for the same quote. After you confirm, it
+
+1. copies the invoice template into the output folder,
+2. writes the invoice data as fixed values into the copy, so the issued invoice does not change later,
+3. sets invoice ID, service period, description and the expenses line (the expenses row is removed if there are none),
+4. resizes the spacer row so the footer stays at the bottom of the page,
+5. exports the invoice tab as PDF into the same folder,
+6. optionally creates a Gmail draft with the PDF attached. The recipient is taken from an optional `Invoice email` column in the Clients tab.
+
+**Check all invoices…** validates every row in the Invoices tab and lists errors and warnings.
+
+**Highlight inconsistent values…** adds conditional formatting rules to the Business sheet. Cells turn red when a quote does not belong to the client, a PO does not match quote and client, an invoice ID does not follow from date, number and quote, an invoice number is used twice, or a time entry or expense points to an invoice of another client. The rules are part of the sheet and work without the script.
+
+**While editing**, dependent values are filled in automatically, but only into empty cells:
+
+| Tab | When you set | The script fills in |
+|-----|--------------|---------------------|
+| Invoices | PO | Client, Quote, Assignment |
+| Invoices | Quote | Client, Assignment |
+| Invoices | any of Client, Quote, PO in a new row | Number, Date, Period, ID formula, Daily rate (from the last invoice on the same PO or quote), Expenses 0, Amount, Tax and total formulas |
+| Purchase orders | Quote | Client, Assignment, tax formulas |
+| Quotes | Client or Assignment in a new row | Number, Issue date, Expiry date (+1 month), ID formula, tax formulas |
+| Time tracking | Client | Rate (latest rate for this client), Revenue formula |
+
+## Validation rules
+
+Errors block invoice creation unless you confirm. Warnings are shown but do not block.
+
+Errors: required fields missing, ID does not match date, number and quote, duplicate ID or number, client, quote or PO not found, client without address, Amount, Tax or total not following from rate, days and expenses.
+
+Warnings: gap in numbering, invoice date earlier than the previous invoice, quote or PO belonging to another client or quote, PO budget exceeded, days not a multiple of a quarter day, daily rate not matching the client tier, no linked time entries, billed days fewer than tracked hours rounded up to quarter days, invoiced expenses matching neither the gross nor the net sum in the Expenses tab, unlinked time entries for the client.
+
+Billing more days than tracked is allowed, as it covers coordination and preparation that is not tracked.
+
+## Setup
+
+### 1. Create the Apps Script project
+
+1. Open the Business sheet and choose **Extensions > Apps Script**. This creates a script bound to the sheet.
+2. In the Apps Script editor open **Project Settings** and copy the **Script ID**.
+3. Enable the Apps Script API for your account at <https://script.google.com/home/usersettings>.
+
+### 2. Connect GitHub Actions
+
+On your computer, in the repository folder (requires Node.js 22):
+
+```
+npm install
+npx clasp login
+```
+
+This opens a browser for the Google login and writes `.clasprc.json` into your user folder (`C:\Users\<you>\.clasprc.json` on Windows).
+
+In the GitHub repository settings:
+
+- **Secrets and variables > Actions > Secrets**: add `CLASPRC_JSON` with the full content of `.clasprc.json`.
+- **Secrets and variables > Actions > Variables**: add `SCRIPT_ID` with the script ID from step 1.
+
+Every push to `main` now runs the tests and deploys the code to the sheet. The workflow can also be started by hand under **Actions**.
+
+To deploy from your computer instead, create `.clasp.json` (not committed):
+
+```json
+{ "scriptId": "<script ID>", "rootDir": "src" }
+```
+
+and run `npm run push`.
+
+### 3. First use in the sheet
+
+1. Reload the Business sheet. The **Backoffice** menu appears.
+2. Choose **Backoffice > Settings…** and enter
+   - the link to the invoice template (a dedicated template, or your latest invoice sheet), and
+   - the link to the Drive folder for new invoices (optional, default is the folder of the template).
+3. The first run asks for permissions: Sheets, Drive (copy template, save PDF), external requests (PDF export), and Gmail compose (drafts only, the script cannot read or send mail).
+
+## Invoice template
+
+The script finds rows by their formulas, not by fixed row numbers:
+
+- the description row has `=Data!F2` in column E,
+- the expenses row has `=Data!H2` in column E,
+- the footer row has `=Config!B20` in column B, and the row directly above it is the spacer.
+
+The Config tab needs the labels `Invoice ID` and `Service period` in column A. The Data tab is overwritten with fixed values in each copy.
+
+For manual invoices, copy the template (not a generated invoice), because generated invoices contain fixed values instead of the import from the Business sheet.
+
+### Layout calibration
+
+The description height is estimated from the text length. If the footer is not exactly at the page bottom, adjust these Script Properties in the Apps Script editor under **Project Settings > Script properties**:
+
+| Property | Default | Meaning |
+|----------|---------|---------|
+| `LAYOUT_CHARS_PER_LINE` | 45 | characters per line in the description cell |
+| `LAYOUT_LINE_HEIGHT_PX` | 18 | height of one text line |
+| `LAYOUT_PADDING_PX` | 6 | extra height of the description row |
+| `LAYOUT_MIN_SPACER_PX` | 10 | smallest spacer height |
+
+## Development
+
+```
+npm install
+npm test
+```
+
+The pure logic (`Config.js`, `Format.js`, `Layout.js`, `Validation.js`, and the formula parts of `Relations.js` and `Rules.js`) runs in Node and is covered by unit tests. Files that use Apps Script services (`Sheets.js`, `Invoice.js`, `Code.js`) can only be tested in the sheet.
+
+Commit messages are in English.
+
+See [BACKLOG.md](BACKLOG.md) for planned work and [docs/workflow-review.md](docs/workflow-review.md) for the review of the sheet-based workflow.

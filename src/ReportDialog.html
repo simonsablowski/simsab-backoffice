@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <?!= include('Styles') ?>
+</head>
+<body>
+  <p id="summary">Checking all invoices…</p>
+  <label><input type="checkbox" id="onlyProblems" checked> Show only invoices with errors or warnings</label>
+  <table>
+    <thead><tr><th style="width:150px">Invoice</th><th style="width:110px">Client</th><th>Findings</th></tr></thead>
+    <tbody id="rows"></tbody>
+  </table>
+<script>
+  var data = [];
+  var $ = function (id) { return document.getElementById(id); };
+  function esc(s) {
+    return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; });
+  }
+  function render() {
+    var only = $('onlyProblems').checked;
+    $('rows').innerHTML = data.filter(function (r) { return !only || r.errors.length || r.warnings.length; }).map(function (r) {
+      var findings = r.errors.map(function (m) { return '<div class="error">' + esc(m) + '</div>'; }).join('') +
+        r.warnings.map(function (m) { return '<div class="warning">' + esc(m) + '</div>'; }).join('');
+      return '<tr><td>' + esc(r.id) + '<div class="hint">row ' + r.row + '</div></td><td>' + esc(r.client) + '</td><td>' +
+        (findings || '<span class="ok">OK</span>') + '</td></tr>';
+    }).join('');
+  }
+  $('onlyProblems').addEventListener('change', render);
+  google.script.run.withSuccessHandler(function (r) {
+    data = r;
+    var e = r.filter(function (x) { return x.errors.length; }).length;
+    var w = r.filter(function (x) { return !x.errors.length && x.warnings.length; }).length;
+    $('summary').textContent = r.length + ' invoices checked: ' + e + ' with errors, ' + w + ' with warnings only.';
+    render();
+  }).withFailureHandler(function (err) { $('summary').innerHTML = '<span class="error">' + esc(err.message) + '</span>'; }).getInvoiceReport();
+</script>
+</body>
+</html>

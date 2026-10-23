@@ -1,0 +1,14 @@
+{
+  "name": "simsab-backoffice",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Google Apps Script helper for invoicing from the Business sheet",
+  "scripts": {
+    "test": "node --test \"test/*.test.js\"",
+    "push": "clasp push --force",
+    "login": "clasp login"
+  },
+  "devDependencies": {
+    "@google/clasp": "3.4.1"
+  }
+}
