@@ -21,9 +21,20 @@ function getSettings() {
   return {
     business: fileLink(props.getProperty(keys.businessId), false),
     template: fileLink(props.getProperty(keys.templateId), false),
-    folder: fileLink(props.getProperty(keys.folderId), true)
+    folder: fileLink(props.getProperty(keys.folderId), true),
+    layout: LAYOUT_FIELDS.map(function (f) {
+      return { key: f.key, label: f.label, hint: f.hint, value: props.getProperty(f.key) || '', defaultValue: f.defaultValue };
+    })
   };
 }
+
+/** Layout values that can be tuned from the settings page; empty means default. */
+var LAYOUT_FIELDS = [
+  { key: 'PDF_MARGIN', label: 'PDF margin (inches)', hint: 'Same margin on all sides.', defaultValue: CONFIG.pdf.top_margin },
+  { key: 'LAYOUT_SPACER_ADJUST_PX', label: 'Footer position adjustment (px)', hint: 'Positive moves the footer down, negative moves it up.', defaultValue: CONFIG.layout.spacerAdjustPx },
+  { key: 'LAYOUT_CHARS_PER_LINE', label: 'Description: characters per line', hint: 'Lower it if long descriptions push the footer down.', defaultValue: CONFIG.layout.charsPerLine },
+  { key: 'LAYOUT_LINE_HEIGHT_PX', label: 'Description: line height (px)', hint: '', defaultValue: CONFIG.layout.lineHeightPx }
+];
 
 /**
  * Saves settings from the settings page. Empty fields keep the current value,
@@ -45,6 +56,14 @@ function saveSettings(input) {
     if (!id) throw new Error('Could not read a Google Drive link for ' + c[0] + '.');
     try { c[2](id); } catch (e) { throw new Error('No access to the ' + c[0] + ' link. Please check it.'); }
     props.setProperty(c[1], id);
+  });
+  var layout = input.layout || {};
+  LAYOUT_FIELDS.forEach(function (f) {
+    if (!(f.key in layout)) return;
+    var text = String(layout[f.key]).trim().replace(',', '.');
+    if (text === '') { props.deleteProperty(f.key); return; }
+    if (isNaN(Number(text))) throw new Error('"' + f.label + '" must be a number.');
+    props.setProperty(f.key, String(Number(text)));
   });
   return getSettings();
 }

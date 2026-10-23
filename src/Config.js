@@ -46,7 +46,9 @@ var CONFIG = {
     charsPerLine: 45,
     lineHeightPx: 18,
     paddingPx: 6,
-    minSpacerPx: 10
+    minSpacerPx: 10,
+    // Added to the calculated spacer height; negative values move the footer up.
+    spacerAdjustPx: 0
   },
 
   // Parameters for the PDF export of the invoice sheet.
@@ -59,10 +61,12 @@ var CONFIG = {
     sheetnames: false,
     pagenum: 'UNDEFINED',
     fzr: false,
-    top_margin: 0.75,
-    bottom_margin: 0.75,
-    left_margin: 0.7,
-    right_margin: 0.7
+    // Margins in inches. The invoice design has coloured bands that run to the
+    // page edges, so the default is no margin. Override with PDF_MARGIN.
+    top_margin: 0,
+    bottom_margin: 0,
+    left_margin: 0,
+    right_margin: 0
   },
 
   propertyKeys: {

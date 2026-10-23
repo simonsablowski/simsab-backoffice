@@ -84,6 +84,12 @@
   <label for="setFolder">Output folder</label>
   <input type="text" id="setFolder" placeholder="Link to a Drive folder (empty: folder of the template)">
   <div class="hint">Paste a new link to change a value. Enter "-" as output folder to use the folder of the template.</div>
+
+  <div class="card">
+    <b>PDF layout</b>
+    <p class="hint">Leave a field empty to use the default shown in grey.</p>
+    <div id="layoutFields"></div>
+  </div>
   <div class="actions"><button class="primary" id="saveSettings">Save</button><span id="settingsStatus"></span></div>
 
   <div class="card">
@@ -238,6 +244,16 @@
     $('setBusiness').value = s.business;
     $('setTemplate').value = s.template;
     $('setFolder').value = s.folder;
+    $('layoutFields').innerHTML = s.layout.map(function (f) {
+      return '<label for="lf-' + esc(f.key) + '">' + esc(f.label) + '</label>' +
+        '<input type="text" inputmode="decimal" id="lf-' + esc(f.key) + '" data-key="' + esc(f.key) + '" value="' + esc(f.value) +
+        '" placeholder="' + esc(f.defaultValue) + '">' + (f.hint ? '<div class="hint">' + esc(f.hint) + '</div>' : '');
+    }).join('');
+  }
+  function layoutInput() {
+    var out = {};
+    Array.prototype.forEach.call(document.querySelectorAll('#layoutFields input'), function (i) { out[i.dataset.key] = i.value; });
+    return out;
   }
   $('saveSettings').addEventListener('click', function () {
     $('settingsStatus').textContent = 'Saving…';
@@ -247,7 +263,7 @@
       loadInvoices();
     }).withFailureHandler(function (err) {
       $('settingsStatus').innerHTML = '<span class="error">' + esc(err.message) + '</span>';
-    }).saveSettings({ business: $('setBusiness').value, template: $('setTemplate').value, folder: $('setFolder').value });
+    }).saveSettings({ business: $('setBusiness').value, template: $('setTemplate').value, folder: $('setFolder').value, layout: layoutInput() });
   });
   $('installRules').addEventListener('click', function () {
     $('installRules').disabled = true;

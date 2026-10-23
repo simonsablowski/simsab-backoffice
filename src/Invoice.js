@@ -144,7 +144,7 @@ function layoutInvoiceSheet(ss, description, expenseLabel, hasExpenses) {
 
   SpreadsheetApp.flush();
   var spacerRow = footerRow - 1;
-  var spacer = computeSpacerHeight(targetTotal, totalRowHeight(sheet), sheet.getRowHeight(spacerRow), layout.minSpacerPx);
+  var spacer = computeSpacerHeight(targetTotal + layout.spacerAdjustPx, totalRowHeight(sheet), sheet.getRowHeight(spacerRow), layout.minSpacerPx);
   sheet.setRowHeightsForced(spacerRow, 1, spacer.height);
   SpreadsheetApp.flush();
 
@@ -157,7 +157,12 @@ function layoutInvoiceSheet(ss, description, expenseLabel, hasExpenses) {
 
 function exportPdf(ss, sheetName, fileName) {
   var sheet = ss.getSheetByName(sheetName);
-  var params = Object.keys(CONFIG.pdf).map(function (k) { return k + '=' + encodeURIComponent(CONFIG.pdf[k]); });
+  var pdf = Object.assign({}, CONFIG.pdf);
+  var margin = getSetting('PDF_MARGIN');
+  if (margin !== null && margin !== '' && !isNaN(Number(margin))) {
+    pdf.top_margin = pdf.bottom_margin = pdf.left_margin = pdf.right_margin = Number(margin);
+  }
+  var params = Object.keys(pdf).map(function (k) { return k + '=' + encodeURIComponent(pdf[k]); });
   var url = 'https://docs.google.com/spreadsheets/d/' + ss.getId() + '/export?format=pdf&gid=' + sheet.getSheetId() + '&' + params.join('&');
   var options = { headers: { Authorization: 'Bearer ' + ScriptApp.getOAuthToken() }, muteHttpExceptions: true };
   var response;
