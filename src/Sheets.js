@@ -3,9 +3,32 @@
  * so reordering or adding columns does not break the script.
  */
 
+/**
+ * The Business spreadsheet. In the sheet the script uses the spreadsheet it is
+ * bound to; in the web app it falls back to the ID stored when the sheet was
+ * last opened, or entered on the settings page.
+ */
+function businessSpreadsheet() {
+  var active = SpreadsheetApp.getActiveSpreadsheet();
+  if (active) return active;
+  var id = PropertiesService.getScriptProperties().getProperty(CONFIG.propertyKeys.businessId);
+  if (!id) throw new Error('The Business sheet is not configured yet. Open Settings and paste its link.');
+  return SpreadsheetApp.openById(id);
+}
+
+/** Remembers the ID of the bound spreadsheet for the web app. */
+function rememberBusinessSpreadsheet() {
+  var active = SpreadsheetApp.getActiveSpreadsheet();
+  if (!active) return;
+  var props = PropertiesService.getScriptProperties();
+  if (props.getProperty(CONFIG.propertyKeys.businessId) !== active.getId()) {
+    props.setProperty(CONFIG.propertyKeys.businessId, active.getId());
+  }
+}
+
 /** Reads a tab into an array of objects keyed by header. Empty rows are skipped. */
 function readRecords(sheetName) {
-  var sheet = SpreadsheetApp.getActive().getSheetByName(sheetName);
+  var sheet = businessSpreadsheet().getSheetByName(sheetName);
   if (!sheet) throw new Error('Tab "' + sheetName + '" not found.');
   var values = sheet.getDataRange().getValues();
   if (values.length === 0) return [];

@@ -53,7 +53,7 @@ function resolveRuleFormula(template, ownColumns, columnsBySheet) {
 }
 
 function installRelationRules() {
-  var ss = SpreadsheetApp.getActive();
+  var ss = businessSpreadsheet();
   var columnsBySheet = {};
   Object.keys(CONFIG.sheets).forEach(function (k) {
     var sh = ss.getSheetByName(CONFIG.sheets[k]);

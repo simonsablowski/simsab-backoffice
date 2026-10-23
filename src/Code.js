@@ -4,6 +4,7 @@
  */
 
 function onOpen() {
+  try { rememberBusinessSpreadsheet(); } catch (e) { console.error(e); }
   SpreadsheetApp.getUi()
     .createMenu('Backoffice')
     .addItem('Create invoice…', 'showInvoiceDialog')

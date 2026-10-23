@@ -43,5 +43,6 @@ Status: **done** (implemented, not yet deployed), **next**, **later**, **open qu
 
 | # | Item | Status |
 |---|------|--------|
+| 23 | Private web app for creating invoices, checking and settings on the phone | done |
 | 21 | Apps Script project with unit tests and automatic deployment via GitHub Actions | done |
 | 22 | One-time setup: script ID, clasp credentials as GitHub secret, template and folder settings | next (needs Simon) |

@@ -66,6 +66,7 @@ var CONFIG = {
   },
 
   propertyKeys: {
+    businessId: 'BUSINESS_SPREADSHEET_ID',
     templateId: 'TEMPLATE_SPREADSHEET_ID',
     folderId: 'OUTPUT_FOLDER_ID'
   }

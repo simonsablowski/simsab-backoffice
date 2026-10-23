@@ -49,3 +49,6 @@ jobs:
       - name: Push to Apps Script
         if: env.SKIP_DEPLOY != '1'
         run: npx clasp push --force
+      - name: Update web app deployment
+        if: env.SKIP_DEPLOY != '1' && vars.DEPLOYMENT_ID != ''
+        run: npx clasp create-deployment --deploymentId "${{ vars.DEPLOYMENT_ID }}" --description "GitHub ${{ github.sha }}"

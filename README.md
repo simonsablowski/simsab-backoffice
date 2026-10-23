@@ -21,6 +21,8 @@ The script adds a **Backoffice** menu to the Business sheet.
 
 **Highlight inconsistent values…** adds conditional formatting rules to the Business sheet. Cells turn red when a quote does not belong to the client, a PO does not match quote and client, an invoice ID does not follow from date, number and quote, an invoice number is used twice, or a time entry or expense points to an invoice of another client. The rules are part of the sheet and work without the script.
 
+**Web app for the phone.** The Sheets mobile app does not show custom menus, so the same functions are available as a private web app (only you can open it): create invoices, check all invoices, change settings and install the highlighting. Open the link from the deployment (Apps Script editor > Deploy > Manage deployments) and add it to your home screen.
+
 **While editing**, dependent values are filled in automatically, but only into empty cells:
 
 | Tab | When you set | The script fills in |
@@ -64,7 +66,7 @@ This opens a browser for the Google login and writes `.clasprc.json` into your u
 In the GitHub repository settings:
 
 - **Secrets and variables > Actions > Secrets**: add `CLASPRC_JSON` with the full content of `.clasprc.json`.
-- **Secrets and variables > Actions > Variables**: add `SCRIPT_ID` with the script ID from step 1.
+- **Secrets and variables > Actions > Variables**: add `SCRIPT_ID` with the script ID from step 1, and `DEPLOYMENT_ID` with the ID of the web app deployment, so the web app is updated on every push.
 
 Every push to `main` now runs the tests and deploys the code to the sheet. The workflow can also be started by hand under **Actions**.
 
