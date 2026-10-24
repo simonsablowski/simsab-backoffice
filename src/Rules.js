@@ -26,6 +26,9 @@ function relationRules() {
       formula: 'COUNTIF(INDIRECT("\'' + s.clients + '\'!{Clients.Client}:{Clients.Client}"),{Client}2)=0' },
     { sheet: s.quotes, column: 'Client', note: 'Client not in Clients',
       formula: 'COUNTIF(INDIRECT("\'' + s.clients + '\'!{Clients.Client}:{Clients.Client}"),{Client}2)=0' },
+    // Optional rules: skipped while the sheet has no such columns (see installPaymentTracking).
+    { sheet: s.invoices, column: CONFIG.payment.dueColumn, optional: true, style: 'overdue', note: 'Unpaid and past the due date',
+      formula: 'AND(ISNUMBER({' + CONFIG.payment.dueColumn + '}2),{' + CONFIG.payment.dueColumn + '}2<TODAY(),{' + CONFIG.payment.paidColumn + '}2="")' },
     { sheet: s.timeTracking, column: 'Client', note: 'Client not in Clients',
       formula: 'COUNTIF(INDIRECT("\'' + s.clients + '\'!{Clients.Client}:{Clients.Client}"),{Client}2)=0' },
     { sheet: s.timeTracking, column: 'Invoice', note: 'No invoice with this ID for this client',
@@ -34,6 +37,12 @@ function relationRules() {
       formula: 'COUNTIFS(INDIRECT("\'' + s.invoices + '\'!{Invoices.ID}:{Invoices.ID}"),{Invoice}2,INDIRECT("\'' + s.invoices + '\'!{Invoices.Client}:{Invoices.Client}"),{Client}2)=0' }
   ];
 }
+
+/** Colours of the highlighting. Rules without a style mark inconsistencies. */
+var RULE_STYLES = {
+  inconsistent: { background: '#f4c7c3', fontColor: '#a50e0e' },
+  overdue: { background: '#fce8b2', fontColor: '#7a4100' }
+};
 
 /**
  * Replaces {Header} with the absolute column letter in the target sheet ($D)
@@ -50,6 +59,17 @@ function resolveRuleFormula(template, ownColumns, columnsBySheet) {
     if (!ownColumns[key]) throw new Error('Column "' + key + '" not found.');
     return '$' + columnLetter(ownColumns[key]);
   });
+}
+
+/** An optional rule is skipped when a column it refers to is missing; any other rule reports the missing column. */
+function ruleApplies(rule, ownColumns, columnsBySheet) {
+  if (!rule.optional) return true;
+  try {
+    resolveRuleFormula(rule.formula, ownColumns, columnsBySheet);
+    return true;
+  } catch (e) {
+    return false;
+  }
 }
 
 function installRelationRules() {
@@ -75,14 +95,15 @@ function installRelationRules() {
       var values = c ? c.getCriteriaValues() : [];
       return !values.some(function (v) { return String(v).indexOf(RULE_MARKER) >= 0; });
     });
-    var added = bySheet[sheetName].filter(function (rule) { return cols[rule.column]; }).map(function (rule) {
+    var added = bySheet[sheetName].filter(function (rule) { return cols[rule.column] && ruleApplies(rule, cols, columnsBySheet); }).map(function (rule) {
+      var style = RULE_STYLES[rule.style] || RULE_STYLES.inconsistent;
       var condition = resolveRuleFormula(rule.formula, cols, columnsBySheet);
       var formula = '=AND(' + '$' + columnLetter(cols[rule.column]) + '2<>"",' + condition + ',' + RULE_MARKER + ')';
       var range = sheet.getRange(2, cols[rule.column], Math.max(sheet.getMaxRows() - 1, 1), 1);
       return SpreadsheetApp.newConditionalFormatRule()
         .whenFormulaSatisfied(formula)
-        .setBackground('#f4c7c3')
-        .setFontColor('#a50e0e')
+        .setBackground(style.background)
+        .setFontColor(style.fontColor)
         .setRanges([range])
         .build();
     });
@@ -96,7 +117,7 @@ function showInstallRules() {
   var ui = SpreadsheetApp.getUi();
   var lines = relationRules().map(function (r) { return '• ' + r.sheet + ' › ' + r.column + ': ' + r.note; });
   var answer = ui.alert('Highlight inconsistent values',
-    'This adds conditional formatting to the Business sheet. Cells turn red when:\n\n' + lines.join('\n') +
+    'This adds conditional formatting to the Business sheet. Cells are highlighted when:\n\n' + lines.join('\n') +
     '\n\nThe rules stay in the sheet and work without the script. Running this again replaces them. Continue?',
     ui.ButtonSet.OK_CANCEL);
   if (answer !== ui.Button.OK) return;

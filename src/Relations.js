@@ -153,6 +153,8 @@ function autofillInvoiceRow(sheet, row, header) {
     r.fill('Tax', invoiceTotalFormulas(r.ref).Tax);
     r.fill('Amount with tax', invoiceTotalFormulas(r.ref)['Amount with tax']);
   }
+  var due = invoiceDueFormula(sheet, row, r.cols);
+  if (due) r.fill(CONFIG.payment.dueColumn, due);
   ss.toast('Filled in dependent values for invoice row ' + row + '.', 'Backoffice', 3);
 }
 

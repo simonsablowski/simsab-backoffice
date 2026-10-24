@@ -11,6 +11,7 @@ function onOpen() {
     .addItem('Create invoice…', 'showInvoiceDialog')
     .addItem('Check all invoices…', 'showReportDialog')
     .addItem('Highlight inconsistent values…', 'showInstallRules')
+    .addItem('Set up payment tracking…', 'showSetupPaymentTracking')
     .addSeparator()
     .addItem('Settings…', 'showSettings')
     .addToUi();

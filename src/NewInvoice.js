@@ -110,6 +110,9 @@ function createNewInvoiceRow(params) {
       Object.keys(totals).forEach(function (h) { if (cols[h]) sheet.getRange(target, cols[h]).setFormula(totals[h]); });
     }
 
+    var due = invoiceDueFormula(sheet, target, cols);
+    if (due) sheet.getRange(target, cols[CONFIG.payment.dueColumn]).setFormula(due);
+
     linkEntries(CONFIG.sheets.timeTracking, result.timeRows, values.ID);
     linkEntries(CONFIG.sheets.expenses, result.expenseRows, values.ID);
     SpreadsheetApp.flush();

@@ -14,6 +14,16 @@ var CONFIG = {
     timeTracking: 'Time tracking'
   },
 
+  // Payment tracking in the Invoices tab. The due date is the invoice date plus
+  // the payment terms in days: from the optional column in the Clients tab,
+  // else the default.
+  payment: {
+    dueColumn: 'Due date',
+    paidColumn: 'Paid',
+    termsColumn: 'Payment terms',
+    defaultTermsDays: 14
+  },
+
   vatRate: 0.19,
   hoursPerDay: 8,
 
