@@ -15,7 +15,7 @@ Status: **done** (implemented, not yet deployed), **next**, **later**, **open qu
 | 5 | Report of all invoices with errors and warnings | done |
 | 6 | Generated invoice sheets store fixed values, so issued invoices no longer change when the Business sheet changes | done |
 | 7 | Calibrate description height and spacer row with real invoices (chars per line, line height) | next |
-| 8 | Prepare a new invoice row: choose client and PO, link unbilled time entries and expenses, propose days and net expenses | next |
+| 8 | Prepare a new invoice row: choose client and PO, link unbilled time entries and expenses, propose days and net expenses | done |
 | 9 | Payment tracking: due date from payment terms, overdue highlighting | later |
 | 10 | E-invoice format (ZUGFeRD or XRechnung) for B2B invoices in Germany, required for issuing from 2028 for small businesses | later |
 | 11 | Calculate expenses on the invoice from the Expenses tab (net) instead of typing them | later |

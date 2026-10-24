@@ -4,7 +4,7 @@ const path = require('node:path');
 const vm = require('node:vm');
 
 // Relations.js and Rules.js only call Apps Script services inside functions, so loading them is safe.
-const PURE_FILES = ['Config.js', 'Format.js', 'Layout.js', 'Validation.js', 'Relations.js', 'Rules.js'];
+const PURE_FILES = ['Config.js', 'Format.js', 'Layout.js', 'Validation.js', 'Prepare.js', 'Relations.js', 'Rules.js'];
 
 function loadPure() {
   const context = vm.createContext({ Date, Math, Number, String, isNaN, console });

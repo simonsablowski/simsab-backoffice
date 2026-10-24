@@ -92,6 +92,21 @@ function withVatFormula(amountRef) {
   return '=' + amountRef + '*' + (1 + CONFIG.vatRate);
 }
 
+/** Formula for the invoice ID; ref maps a header to the cell reference in the row. */
+function invoiceIdFormula(ref) {
+  return '=IF(OR(' + ref('Date') + '="",' + ref('Number') + '="",' + ref('Quote') + '=""),"",YEAR(' +
+    ref('Date') + ')&"-A"&TEXT(' + ref('Number') + ',"00")&"-"&REGEXEXTRACT(' + ref('Quote') + ',"A\\d+$"))';
+}
+
+/** Formulas for Amount, Tax and Amount with tax of an invoice row. */
+function invoiceTotalFormulas(ref) {
+  return {
+    Amount: '=' + ref('Daily rate') + '*' + ref('Number of days') + '+' + ref('Expenses'),
+    Tax: vatFormula(ref('Amount')),
+    'Amount with tax': withVatFormula(ref('Amount'))
+  };
+}
+
 function autofillInvoiceRow(sheet, row, header) {
   var r = rowAccess(sheet, row);
   var ss = sheet.getParent();
@@ -121,29 +136,22 @@ function autofillInvoiceRow(sheet, row, header) {
   r.fill('Date', date);
   r.fill('Period', date);
   if (r.cols.ID && r.cols.Date && r.cols.Number && r.cols.Quote) {
-    r.fill('ID', '=IF(OR(' + r.ref('Date') + '="",' + r.ref('Number') + '="",' + r.ref('Quote') + '=""),"",YEAR(' +
-      r.ref('Date') + ')&"-A"&TEXT(' + r.ref('Number') + ',"00")&"-"&REGEXEXTRACT(' + r.ref('Quote') + ',"A\\d+$"))');
+    r.fill('ID', invoiceIdFormula(r.ref));
   }
 
   // Daily rate of the latest invoice for the same PO, else the same quote.
   if (r.isEmpty('Daily rate') && (!isBlank(r.get('PO')) || !isBlank(r.get('Quote')))) {
-    var previous = readRecords(CONFIG.sheets.invoices)
-      .filter(function (o) { return o._row !== row && toNumber(o['Daily rate']) > 0; })
-      .filter(function (o) {
-        return (!isBlank(r.get('PO')) && normKey(o.PO) === normKey(r.get('PO'))) ||
-          (!isBlank(r.get('Quote')) && normKey(o.Quote) === normKey(r.get('Quote')));
-      })
-      .sort(function (a, b) { return (toNumber(b.Number) || 0) - (toNumber(a.Number) || 0); })[0];
-    if (previous) r.fill('Daily rate', previous['Daily rate']);
+    var rate = latestDailyRate(readRecords(CONFIG.sheets.invoices), normKey(r.get('PO')), normKey(r.get('Quote')), row);
+    if (!isNaN(rate)) r.fill('Daily rate', rate);
   }
 
   r.fill('Expenses', 0);
   if (r.cols.Amount && r.cols['Daily rate'] && r.cols['Number of days'] && r.cols.Expenses) {
-    r.fill('Amount', '=' + r.ref('Daily rate') + '*' + r.ref('Number of days') + '+' + r.ref('Expenses'));
+    r.fill('Amount', invoiceTotalFormulas(r.ref).Amount);
   }
   if (r.cols.Amount) {
-    r.fill('Tax', vatFormula(r.ref('Amount')));
-    r.fill('Amount with tax', withVatFormula(r.ref('Amount')));
+    r.fill('Tax', invoiceTotalFormulas(r.ref).Tax);
+    r.fill('Amount with tax', invoiceTotalFormulas(r.ref)['Amount with tax']);
   }
   ss.toast('Filled in dependent values for invoice row ' + row + '.', 'Backoffice', 3);
 }

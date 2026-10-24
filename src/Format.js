@@ -87,3 +87,16 @@ function formatEuro(x) {
   var intPart = fixed[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.');
   return '€' + intPart + ',' + fixed[1];
 }
+
+/** Parses yyyy-MM-dd (as a date input delivers it) into a local date, or null. */
+function parseIsoDate(text) {
+  var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(text || '').trim());
+  if (!m) return null;
+  var d = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+  return d.getMonth() === Number(m[2]) - 1 ? d : null;
+}
+
+/** A comparable number for the calendar day of a date, ignoring the time. */
+function dayNumber(d) {
+  return d.getFullYear() * 10000 + (d.getMonth() + 1) * 100 + d.getDate();
+}

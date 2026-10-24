@@ -27,14 +27,19 @@
 <header>
   <h1>Backoffice</h1>
   <nav>
-    <button data-tab="invoice" class="active">Invoice</button>
+    <button data-tab="prepare" class="active">New row</button>
+    <button data-tab="invoice">Invoice</button>
     <button data-tab="check">Check</button>
     <button data-tab="settings">Settings</button>
   </nav>
 </header>
 <main>
 
-<section id="tab-invoice" class="active">
+<section id="tab-prepare" class="active">
+  <?!= include('PrepareForm') ?>
+</section>
+
+<section id="tab-invoice">
   <label for="invoice">Invoice row</label>
   <select id="invoice" disabled><option>Loading…</option></select>
   <div class="hint">Add the row in the Invoices tab first. The list shows the latest 30 invoices.</div>

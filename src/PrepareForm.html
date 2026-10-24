@@ -1,0 +1,113 @@
+<!-- Form for preparing a new invoice row. Included by the sheet dialog and by the web app. -->
+<div id="pf">
+  <label for="pf-client">Client</label>
+  <select id="pf-client" disabled><option>Loading…</option></select>
+
+  <label for="pf-po">PO</label>
+  <select id="pf-po" disabled></select>
+  <div class="hint">Only POs of the chosen client. Quote and assignment come from the PO.</div>
+
+  <label for="pf-date">Invoice date</label>
+  <input type="text" id="pf-date" inputmode="numeric" placeholder="yyyy-mm-dd">
+
+  <label for="pf-from">Entries from (optional)</label>
+  <input type="text" id="pf-from" inputmode="numeric" placeholder="yyyy-mm-dd">
+  <label for="pf-to">Entries until (optional)</label>
+  <input type="text" id="pf-to" inputmode="numeric" placeholder="yyyy-mm-dd">
+  <div class="hint">Unbilled time entries and expenses of the client in this period are linked to the new invoice. Empty means all of them.</div>
+
+  <div class="actions">
+    <button id="pf-preview">Show proposal</button>
+    <span id="pf-status"></span>
+  </div>
+
+  <div id="pf-proposal" style="display:none">
+    <div class="summary" id="pf-summary"></div>
+    <div id="pf-messages"></div>
+    <div class="actions">
+      <button class="primary" id="pf-write">Add row to the Invoices tab</button>
+    </div>
+  </div>
+  <div id="pf-result"></div>
+</div>
+
+<script>
+  (function () {
+    var q = function (id) { return document.getElementById(id); };
+    var options = { clients: [], pos: [] };
+    var proposal = null;
+
+    function esc(s) {
+      return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; });
+    }
+    function list(items, cls) {
+      if (!items.length) return '';
+      return '<ul class="msgs">' + items.map(function (m) { return '<li class="' + cls + '">' + esc(m) + '</li>'; }).join('') + '</ul>';
+    }
+    function fail(err) {
+      q('pf-status').textContent = '';
+      q('pf-preview').disabled = false;
+      q('pf-write').disabled = false;
+      q('pf-result').innerHTML = '<div class="result error">' + esc(err.message || err) + '</div>';
+    }
+    function params() {
+      return { client: q('pf-client').value, po: q('pf-po').value, date: q('pf-date').value, from: q('pf-from').value, to: q('pf-to').value };
+    }
+    function fillPos() {
+      var client = q('pf-client').value;
+      var pos = options.pos.filter(function (p) { return p.client === client; });
+      q('pf-po').innerHTML = pos.map(function (p) {
+        return '<option value="' + esc(p.id) + '">' + esc(p.id + ' · ' + p.quote + ' · ' + p.assignment) + '</option>';
+      }).join('') || '<option value="">No PO for this client</option>';
+      q('pf-po').disabled = !pos.length;
+      hideProposal();
+    }
+    function hideProposal() {
+      proposal = null;
+      q('pf-proposal').style.display = 'none';
+      q('pf-result').innerHTML = '';
+    }
+    function showProposal(p) {
+      q('pf-status').textContent = '';
+      q('pf-preview').disabled = false;
+      proposal = p;
+      q('pf-summary').innerHTML = p.fields.map(function (r) {
+        return '<div>' + esc(r[0]) + '</div><div>' + esc(r[1]) + '</div>';
+      }).join('');
+      q('pf-messages').innerHTML = list(p.errors, 'error') + list(p.warnings, 'warning') + list(p.info, 'info');
+      q('pf-write').style.display = p.errors.length ? 'none' : '';
+      q('pf-proposal').style.display = '';
+    }
+    function written(r) {
+      q('pf-status').textContent = '';
+      q('pf-write').disabled = false;
+      q('pf-proposal').style.display = 'none';
+      q('pf-result').innerHTML = '<div class="result"><b>Row ' + esc(r.row) + ' added:</b> ' + esc(r.id) + '<br>' +
+        r.timeEntries + ' time entries and ' + r.expenses + ' expenses linked.<br>' +
+        'Check the row, enter the days if they are still missing, then create the invoice.' + list(r.warnings, 'warning') + '</div>';
+    }
+
+    q('pf-client').addEventListener('change', fillPos);
+    q('pf-po').addEventListener('change', hideProposal);
+    q('pf-preview').addEventListener('click', function () {
+      q('pf-result').innerHTML = '';
+      q('pf-preview').disabled = true;
+      q('pf-status').textContent = 'Calculating…';
+      google.script.run.withSuccessHandler(showProposal).withFailureHandler(fail).previewNewInvoiceRow(params());
+    });
+    q('pf-write').addEventListener('click', function () {
+      if (!proposal || proposal.errors.length) return;
+      q('pf-write').disabled = true;
+      q('pf-status').textContent = 'Writing the row…';
+      google.script.run.withSuccessHandler(written).withFailureHandler(fail).createNewInvoiceRow(params());
+    });
+
+    google.script.run.withSuccessHandler(function (o) {
+      options = o;
+      q('pf-client').innerHTML = o.clients.map(function (c) { return '<option value="' + esc(c) + '">' + esc(c) + '</option>'; }).join('');
+      q('pf-client').disabled = false;
+      q('pf-date').value = o.today;
+      fillPos();
+    }).withFailureHandler(fail).getPrepareOptions();
+  })();
+</script>

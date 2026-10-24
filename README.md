@@ -8,6 +8,8 @@ It is a Google Apps Script bound to the Business Google Sheet. All data stays in
 
 The script adds a **Backoffice** menu to the Business sheet.
 
+**Prepare invoice row…** takes a client and one of its POs and proposes the whole row for the Invoices tab: next number, date, ID formula, quote and assignment from the PO, daily rate from the latest invoice on the PO or quote (else from the client tier if it is unambiguous), days as the tracked hours of all unbilled time entries rounded up to quarter days, and expenses as the net sum of the unbilled expenses. Optionally limit the entries to a period. After you confirm, the row is written (it can still be edited by hand) and the time entries and expenses are linked to the new invoice ID. The same function is in the **New row** tab of the web app.
+
 **Create invoice…** opens a dialog for one row of the Invoices tab. It shows the validation results for the row, proposes the service period from the linked time entries and prefills the description from the latest invoice for the same quote. After you confirm, it
 
 1. copies the invoice template into the output folder,

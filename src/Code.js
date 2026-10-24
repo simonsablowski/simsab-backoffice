@@ -7,12 +7,18 @@ function onOpen() {
   try { rememberBusinessSpreadsheet(); } catch (e) { console.error(e); }
   SpreadsheetApp.getUi()
     .createMenu('Backoffice')
+    .addItem('Prepare invoice row…', 'showPrepareDialog')
     .addItem('Create invoice…', 'showInvoiceDialog')
     .addItem('Check all invoices…', 'showReportDialog')
     .addItem('Highlight inconsistent values…', 'showInstallRules')
     .addSeparator()
     .addItem('Settings…', 'showSettings')
     .addToUi();
+}
+
+function showPrepareDialog() {
+  var html = HtmlService.createTemplateFromFile('PrepareDialog').evaluate().setWidth(560).setHeight(720);
+  SpreadsheetApp.getUi().showModalDialog(html, 'Prepare invoice row');
 }
 
 function showInvoiceDialog() {
