@@ -21,6 +21,8 @@ The script adds a **Backoffice** menu to the Business sheet.
 
 **Set up payment tracking…** adds a `Due date` column to the Invoices tab (a formula: invoice date plus the payment terms in days from an optional `Payment terms` column in the Clients tab, otherwise 14 days) and highlights unpaid invoices past the due date in amber. An invoice counts as unpaid while its `Paid` column is empty. Both are part of the sheet and work without the script; new invoice rows get the formula automatically. The column names and the default terms are in `Config.js` (`payment`).
 
+**Limit dropdowns to matching values…** limits the Quote and PO cells in the Invoices tab to the quotes and POs of the chosen client (and the POs to the chosen quote, if the client has POs for it), and the Quote cell in the Purchase orders tab to the quotes of the client. The lists are set per row while you edit, and this menu item applies them to all existing rows. Other values can still be typed: they are accepted and marked with the sheet's warning, and the red highlighting still shows relations that do not fit.
+
 **Check all invoices…** validates every row in the Invoices tab and lists errors and warnings.
 
 **Highlight inconsistent values…** adds conditional formatting rules to the Business sheet. Cells turn red when a quote does not belong to the client, a PO does not match quote and client, an invoice ID does not follow from date, number and quote, an invoice number is used twice, or a time entry or expense points to an invoice of another client. The rules are part of the sheet and work without the script.

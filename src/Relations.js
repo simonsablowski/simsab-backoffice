@@ -21,8 +21,14 @@ function onEdit(e) {
     var header = String(sheet.getRange(1, e.range.getColumn()).getValue()).trim();
     var s = CONFIG.sheets;
     switch (sheet.getName()) {
-      case s.invoices: autofillInvoiceRow(sheet, row, header); break;
-      case s.purchaseOrders: autofillPurchaseOrderRow(sheet, row, header); break;
+      case s.invoices:
+        autofillInvoiceRow(sheet, row, header);
+        if (['Client', 'Quote', 'PO'].indexOf(header) >= 0) applyInvoiceRowDropdowns(sheet, row);
+        break;
+      case s.purchaseOrders:
+        autofillPurchaseOrderRow(sheet, row, header);
+        if (['Client', 'Quote'].indexOf(header) >= 0) applyPurchaseOrderRowDropdowns(sheet, row);
+        break;
       case s.quotes: autofillQuoteRow(sheet, row, header); break;
       case s.timeTracking: autofillTimeRow(sheet, row, header); break;
     }

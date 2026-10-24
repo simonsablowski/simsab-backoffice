@@ -26,7 +26,7 @@ Status: **done** (implemented, not yet deployed), **next**, **later**, **open qu
 |---|------|--------|
 | 12 | Auto-fill dependent values while editing: PO fills client, quote and assignment; quote fills client and assignment; new rows get number, date, ID formula, daily rate and totals | done |
 | 13 | Highlight inconsistent relations directly in the sheet (conditional formatting that works without the script): quote vs client, PO vs quote and client, ID format, duplicate numbers, invoice links in Time tracking and Expenses | next |
-| 14 | Dropdowns limited to matching values (e.g. only POs of the selected client) | later |
+| 14 | Dropdowns limited to matching values (e.g. only POs of the selected client) | done |
 | 15 | Central VAT rate instead of 19% in every formula and label | later |
 | 16 | Activity column in Time tracking so the hourly rate follows from tier and activity | open question |
 | 17 | Make intentional billing adjustments explicit (e.g. a note column) so they are not confused with forgotten hours | open question |

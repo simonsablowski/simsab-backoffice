@@ -110,6 +110,8 @@ function createNewInvoiceRow(params) {
       Object.keys(totals).forEach(function (h) { if (cols[h]) sheet.getRange(target, cols[h]).setFormula(totals[h]); });
     }
 
+    applyInvoiceRowDropdowns(sheet, target);
+
     var due = invoiceDueFormula(sheet, target, cols);
     if (due) sheet.getRange(target, cols[CONFIG.payment.dueColumn]).setFormula(due);
 

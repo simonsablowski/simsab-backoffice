@@ -110,6 +110,12 @@
     <p class="hint">Adds a due date column to the Invoices tab (invoice date plus payment terms) and highlights unpaid invoices past the due date in amber. Needs the Paid column. Running it again fills in missing due dates.</p>
     <button id="setupPayments">Set up payment tracking</button> <span id="paymentsStatus"></span>
   </div>
+
+  <div class="card">
+    <b>Dropdowns</b>
+    <p class="hint">Limits the Quote and PO dropdowns in the Invoices tab and the Quote dropdown in the Purchase orders tab to the entries of the chosen client. Other values can still be typed. The lists are updated while you edit; this applies them to all existing rows.</p>
+    <button id="installDropdowns">Limit dropdowns</button> <span id="dropdownsStatus"></span>
+  </div>
 </section>
 
 </main>
@@ -298,6 +304,18 @@
       $('setupPayments').disabled = false;
       $('paymentsStatus').innerHTML = '<span class="error">' + esc(err.message) + '</span>';
     }).setupPaymentTrackingFromWeb();
+  });
+
+  $('installDropdowns').addEventListener('click', function () {
+    $('installDropdowns').disabled = true;
+    $('dropdownsStatus').textContent = 'Applying…';
+    google.script.run.withSuccessHandler(function (n) {
+      $('installDropdowns').disabled = false;
+      $('dropdownsStatus').innerHTML = '<span class="ok">Dropdowns limited in ' + n + ' rows.</span>';
+    }).withFailureHandler(function (err) {
+      $('installDropdowns').disabled = false;
+      $('dropdownsStatus').innerHTML = '<span class="error">' + esc(err.message) + '</span>';
+    }).installDropdownsFromWeb();
   });
 
   google.script.run.withSuccessHandler(showSettings).getSettings();
