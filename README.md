@@ -23,6 +23,8 @@ The script adds a **Backoffice** menu to the Business sheet.
 
 **Limit dropdowns to matching values…** limits the Quote and PO cells in the Invoices tab to the quotes and POs of the chosen client (and the POs to the chosen quote, if the client has POs for it), and the Quote cell in the Purchase orders tab to the quotes of the client. The lists are set per row while you edit, and this menu item applies them to all existing rows. Other values can still be typed: they are accepted and marked with the sheet's warning, and the red highlighting still shows relations that do not fit.
 
+**Show remaining PO budgets…** adds the columns `Invoiced` and `Remaining` to the Purchase orders tab if they are missing. Both are formulas (`SUMIFS` over the Invoices tab), so they work without the script, and new PO rows get them automatically. `Invoiced` is the service amount of all invoices on the PO (Amount minus Expenses, like in the validation), `Remaining` is the budget of all rows with the same PO ID minus `Invoiced`. A negative remaining budget is highlighted in red.
+
 **Check all invoices…** validates every row in the Invoices tab and lists errors and warnings.
 
 **Highlight inconsistent values…** adds conditional formatting rules to the Business sheet. Cells turn red when a quote does not belong to the client, a PO does not match quote and client, an invoice ID does not follow from date, number and quote, an invoice number is used twice, or a time entry or expense points to an invoice of another client. The rules are part of the sheet and work without the script.

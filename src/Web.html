@@ -116,6 +116,12 @@
     <p class="hint">Limits the Quote and PO dropdowns in the Invoices tab and the Quote dropdown in the Purchase orders tab to the entries of the chosen client. Other values can still be typed. The lists are updated while you edit; this applies them to all existing rows.</p>
     <button id="installDropdowns">Limit dropdowns</button> <span id="dropdownsStatus"></span>
   </div>
+
+  <div class="card">
+    <b>PO budgets</b>
+    <p class="hint">Adds the columns Invoiced and Remaining to the Purchase orders tab as formulas over the Invoices tab and highlights a negative remaining budget. Running it again fills in missing formulas.</p>
+    <button id="setupBudget">Show remaining PO budgets</button> <span id="budgetStatus"></span>
+  </div>
 </section>
 
 </main>
@@ -316,6 +322,18 @@
       $('installDropdowns').disabled = false;
       $('dropdownsStatus').innerHTML = '<span class="error">' + esc(err.message) + '</span>';
     }).installDropdownsFromWeb();
+  });
+
+  $('setupBudget').addEventListener('click', function () {
+    $('setupBudget').disabled = true;
+    $('budgetStatus').textContent = 'Setting up…';
+    google.script.run.withSuccessHandler(function (r) {
+      $('setupBudget').disabled = false;
+      $('budgetStatus').innerHTML = '<span class="ok">' + r.added + ' columns added, ' + r.rows + ' rows filled in, ' + r.rules + ' rules installed.</span>';
+    }).withFailureHandler(function (err) {
+      $('setupBudget').disabled = false;
+      $('budgetStatus').innerHTML = '<span class="error">' + esc(err.message) + '</span>';
+    }).setupPoBudgetFromWeb();
   });
 
   google.script.run.withSuccessHandler(showSettings).getSettings();

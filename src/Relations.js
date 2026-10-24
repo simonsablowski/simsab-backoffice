@@ -177,6 +177,11 @@ function autofillPurchaseOrderRow(sheet, row, header) {
     r.fill('Tax', vatFormula(r.ref('Amount')));
     r.fill('Amount with tax', withVatFormula(r.ref('Amount')));
   }
+  var budget = purchaseOrderBudgetFormulas(sheet, row, r.cols);
+  if (budget) {
+    r.fill(BUDGET_COLUMNS.invoiced, budget.invoiced);
+    r.fill(BUDGET_COLUMNS.remaining, budget.remaining);
+  }
 }
 
 function autofillQuoteRow(sheet, row, header) {

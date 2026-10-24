@@ -7,7 +7,7 @@ const g = loadPure();
 const columnsBySheet = {
   Clients: { Client: 1, Tier: 2, Status: 3, Address: 4 },
   Quotes: { Number: 1, 'Issue date': 2, 'Expiry date': 3, Client: 4, ID: 5, Assignment: 6 },
-  'Purchase orders': { Date: 1, Client: 2, ID: 3, Assignment: 4, Quote: 5, Amount: 6 },
+  'Purchase orders': { Date: 1, Client: 2, ID: 3, Assignment: 4, Quote: 5, Amount: 6, Invoiced: 7, Remaining: 8 },
   Invoices: { Number: 1, Date: 2, Period: 3, Client: 4, Assignment: 5, Quote: 6, PO: 7, ID: 8, Paid: 9, 'Due date': 10 },
   'Time tracking': { Date: 1, Client: 2, Hours: 3, Rate: 4, Revenue: 5, Description: 6, Invoice: 7 },
   Expenses: { Date: 1, Client: 2, Cost: 3, Description: 4, Invoice: 5 }

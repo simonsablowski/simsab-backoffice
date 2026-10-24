@@ -29,6 +29,8 @@ function relationRules() {
     // Optional rules: skipped while the sheet has no such columns (see installPaymentTracking).
     { sheet: s.invoices, column: CONFIG.payment.dueColumn, optional: true, style: 'overdue', note: 'Unpaid and past the due date',
       formula: 'AND(ISNUMBER({' + CONFIG.payment.dueColumn + '}2),{' + CONFIG.payment.dueColumn + '}2<TODAY(),{' + CONFIG.payment.paidColumn + '}2="")' },
+    { sheet: s.purchaseOrders, column: BUDGET_COLUMNS.remaining, optional: true, note: 'PO budget exceeded (negative remaining budget)',
+      formula: 'AND(ISNUMBER({' + BUDGET_COLUMNS.remaining + '}2),{' + BUDGET_COLUMNS.remaining + '}2<-0.005)' },
     { sheet: s.timeTracking, column: 'Client', note: 'Client not in Clients',
       formula: 'COUNTIF(INDIRECT("\'' + s.clients + '\'!{Clients.Client}:{Clients.Client}"),{Client}2)=0' },
     { sheet: s.timeTracking, column: 'Invoice', note: 'No invoice with this ID for this client',

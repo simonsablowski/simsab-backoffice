@@ -13,6 +13,7 @@ function onOpen() {
     .addItem('Highlight inconsistent values…', 'showInstallRules')
     .addItem('Set up payment tracking…', 'showSetupPaymentTracking')
     .addItem('Limit dropdowns to matching values…', 'showInstallDropdowns')
+    .addItem('Show remaining PO budgets…', 'showSetupPoBudget')
     .addSeparator()
     .addItem('Settings…', 'showSettings')
     .addToUi();
