@@ -29,6 +29,7 @@
   <nav>
     <button data-tab="prepare" class="active">New row</button>
     <button data-tab="invoice">Invoice</button>
+    <button data-tab="quote">Quote</button>
     <button data-tab="check">Check</button>
     <button data-tab="settings">Settings</button>
   </nav>
@@ -74,6 +75,10 @@
   </div>
 </section>
 
+<section id="tab-quote">
+  <?!= include('QuoteForm') ?>
+</section>
+
 <section id="tab-check">
   <p id="checkSummary" class="hint">Checks every row of the Invoices tab.</p>
   <button id="runCheck" class="primary">Run check</button>
@@ -86,6 +91,8 @@
   <input type="text" id="setBusiness" placeholder="Link to the Business sheet">
   <label for="setTemplate">Invoice template</label>
   <input type="text" id="setTemplate" placeholder="Link to the template or your latest invoice sheet">
+  <label for="setQuoteTemplate">Quote template</label>
+  <input type="text" id="setQuoteTemplate" placeholder="Link to the quote template">
   <label for="setFolder">Output folder</label>
   <input type="text" id="setFolder" placeholder="Link to a Drive folder (empty: folder of the template)">
   <div class="hint">Paste a new link to change a value. Enter "-" as output folder to use the folder of the template.</div>
@@ -266,6 +273,7 @@
   function showSettings(s) {
     $('setBusiness').value = s.business;
     $('setTemplate').value = s.template;
+    $('setQuoteTemplate').value = s.quoteTemplate;
     $('setFolder').value = s.folder;
     $('layoutFields').innerHTML = s.layout.map(function (f) {
       return '<label for="lf-' + esc(f.key) + '">' + esc(f.label) + '</label>' +
@@ -286,7 +294,7 @@
       loadInvoices();
     }).withFailureHandler(function (err) {
       $('settingsStatus').innerHTML = '<span class="error">' + esc(err.message) + '</span>';
-    }).saveSettings({ business: $('setBusiness').value, template: $('setTemplate').value, folder: $('setFolder').value, layout: layoutInput() });
+    }).saveSettings({ business: $('setBusiness').value, template: $('setTemplate').value, quoteTemplate: $('setQuoteTemplate').value, folder: $('setFolder').value, layout: layoutInput() });
   });
   $('installRules').addEventListener('click', function () {
     $('installRules').disabled = true;

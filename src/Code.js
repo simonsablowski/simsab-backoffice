@@ -9,6 +9,7 @@ function onOpen() {
     .createMenu('Backoffice')
     .addItem('Prepare invoice row…', 'showPrepareDialog')
     .addItem('Create invoice…', 'showInvoiceDialog')
+    .addItem('Create quote…', 'showQuoteDialog')
     .addItem('Check all invoices…', 'showReportDialog')
     .addItem('Highlight inconsistent values…', 'showInstallRules')
     .addItem('Set up payment tracking…', 'showSetupPaymentTracking')
@@ -22,6 +23,11 @@ function onOpen() {
 function showPrepareDialog() {
   var html = HtmlService.createTemplateFromFile('PrepareDialog').evaluate().setWidth(560).setHeight(720);
   SpreadsheetApp.getUi().showModalDialog(html, 'Prepare invoice row');
+}
+
+function showQuoteDialog() {
+  var html = HtmlService.createTemplateFromFile('QuoteDialog').evaluate().setWidth(720).setHeight(720);
+  SpreadsheetApp.getUi().showModalDialog(html, 'Create quote');
 }
 
 function showInvoiceDialog() {
@@ -45,6 +51,13 @@ function showSettings() {
   if (template.getSelectedButton() !== ui.Button.OK) return;
   var templateId = extractDriveId(template.getResponseText());
   if (templateId) props.setProperty(keys.templateId, templateId);
+
+  var quoteTemplate = ui.prompt('Quote template',
+    'Link to the Google Sheet used as quote template (built like the invoice template).\nCurrent: ' +
+    (props.getProperty(keys.quoteTemplateId) || 'not set') + '\nLeave empty to keep the current value.', ui.ButtonSet.OK_CANCEL);
+  if (quoteTemplate.getSelectedButton() !== ui.Button.OK) return;
+  var quoteTemplateId = extractDriveId(quoteTemplate.getResponseText());
+  if (quoteTemplateId) props.setProperty(keys.quoteTemplateId, quoteTemplateId);
 
   var folder = ui.prompt('Output folder',
     'Link to the Drive folder for new invoices.\nCurrent: ' + (props.getProperty(keys.folderId) || 'folder of the template') +

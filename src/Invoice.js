@@ -60,6 +60,7 @@ function lastDescriptionFor(quote) {
 
 /** Finds the first row whose formula in the given column equals the marker. */
 function findRowByFormula(sheet, column, marker) {
+  if (!marker) return -1;
   var formulas = sheet.getRange(1, column, sheet.getLastRow(), 1).getFormulas();
   for (var i = 0; i < formulas.length; i++) {
     if (String(formulas[i][0]).replace(/\s/g, '') === marker) return i + 1;
@@ -112,10 +113,12 @@ function writeConfig(ss, invoiceId, servicePeriod) {
 
 /**
  * Fills description and expenses rows and resizes the spacer row.
+ * @param spec sheet name and row markers of the template; defaults to the invoice template,
+ *             the quote template passes CONFIG.quoteTemplate
  * @return {string[]} layout warnings
  */
-function layoutInvoiceSheet(ss, description, expenseLabel, hasExpenses) {
-  var t = CONFIG.template;
+function layoutInvoiceSheet(ss, description, expenseLabel, hasExpenses, spec) {
+  var t = spec || CONFIG.template;
   var layout = layoutSettings();
   var sheet = ss.getSheetByName(t.invoiceSheet);
   if (!sheet) throw new Error('The template has no "' + t.invoiceSheet + '" tab.');
@@ -177,12 +180,20 @@ function exportPdf(ss, sheetName, fileName) {
   return response.getBlob().setName(fileName + '.pdf');
 }
 
-function createDraft(ss, pdfFile, client) {
-  var message = ss.getSheetByName(CONFIG.template.messageSheet);
+/**
+ * Creates a Gmail draft with the PDF attached, using subject and body from the Message tab of the copy.
+ * @param spec          the template conventions (messageSheet); defaults to the invoice template
+ * @param emailColumns  columns of the Clients tab to take the recipient from, first one that is filled
+ */
+function createDraft(ss, pdfFile, client, spec, emailColumns) {
+  var message = ss.getSheetByName((spec || CONFIG.template).messageSheet);
   if (!message) return null;
   var subject = message.getRange('A1').getDisplayValue();
   var body = message.getRange('A3').getDisplayValue();
-  var recipient = client && !isBlank(client['Invoice email']) ? String(client['Invoice email']).trim() : '';
+  var recipient = '';
+  (emailColumns || ['Invoice email']).forEach(function (column) {
+    if (!recipient && client && !isBlank(client[column])) recipient = String(client[column]).trim();
+  });
   var raw = buildMimeMessage(recipient, subject, body, pdfFile.getBlob());
   // The Gmail advanced service only needs the gmail.compose scope, unlike GmailApp.
   var draft = Gmail.Users.Drafts.create({ message: { raw: Utilities.base64EncodeWebSafe(raw) } }, 'me');

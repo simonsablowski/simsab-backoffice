@@ -37,7 +37,7 @@ Status: **done** (implemented, not yet deployed), **next**, **later**, **open qu
 |---|------|--------|
 | 18 | Remaining budget per PO visible in the Purchase orders tab | done |
 | 19 | Quote expiry highlighting and status updates | later |
-| 20 | Generate quote documents from the Quotes tab, like invoices | later |
+| 20 | Generate quote documents from the Quotes tab, like invoices | done (needs a quote template, see README) |
 
 ## Engineering
 

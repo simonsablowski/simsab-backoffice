@@ -21,6 +21,7 @@ function getSettings() {
   return {
     business: fileLink(props.getProperty(keys.businessId), false),
     template: fileLink(props.getProperty(keys.templateId), false),
+    quoteTemplate: fileLink(props.getProperty(keys.quoteTemplateId), false),
     folder: fileLink(props.getProperty(keys.folderId), true),
     layout: LAYOUT_FIELDS.map(function (f) {
       return { key: f.key, label: f.label, hint: f.hint, value: props.getProperty(f.key) || '', defaultValue: f.defaultValue };
@@ -46,6 +47,7 @@ function saveSettings(input) {
   var checks = [
     ['business', keys.businessId, function (id) { SpreadsheetApp.openById(id); }],
     ['template', keys.templateId, function (id) { DriveApp.getFileById(id); }],
+    ['quoteTemplate', keys.quoteTemplateId, function (id) { DriveApp.getFileById(id); }],
     ['folder', keys.folderId, function (id) { DriveApp.getFolderById(id); }]
   ];
   checks.forEach(function (c) {

@@ -50,6 +50,25 @@ var CONFIG = {
     defaultExpenseLabel: 'Reisekosten (Flüge, Hotel, Transfers)'
   },
 
+  // The quote template is built like the invoice template: a copy of it with the
+  // tabs below. Same keys as "template", so the layout code is shared. The quote
+  // has no expenses row. The Config tab has a row "Quote ID" and optionally a row
+  // "Valid until".
+  quoteTemplate: {
+    invoiceSheet: 'Quote',
+    configSheet: 'Config',
+    dataSheet: 'Data',
+    messageSheet: 'Message',
+    importSheet: 'Quotes',
+    descriptionRowMarker: '=Data!F2',
+    expensesRowMarker: '',
+    footerRowMarker: '=Config!B20',
+    configLabels: {
+      quoteId: 'Quote ID',
+      validUntil: 'Valid until'
+    }
+  },
+
   // Layout of the description cell. The script sets its height explicitly
   // and resizes the spacer row so that the footer stays at the page bottom.
   layout: {
@@ -82,6 +101,7 @@ var CONFIG = {
   propertyKeys: {
     businessId: 'BUSINESS_SPREADSHEET_ID',
     templateId: 'TEMPLATE_SPREADSHEET_ID',
+    quoteTemplateId: 'QUOTE_TEMPLATE_SPREADSHEET_ID',
     folderId: 'OUTPUT_FOLDER_ID'
   }
 };

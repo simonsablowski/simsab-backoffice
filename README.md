@@ -25,6 +25,17 @@ The script adds a **Backoffice** menu to the Business sheet.
 
 **Show remaining PO budgets…** adds the columns `Invoiced` and `Remaining` to the Purchase orders tab if they are missing. Both are formulas (`SUMIFS` over the Invoices tab), so they work without the script, and new PO rows get them automatically. `Invoiced` is the service amount of all invoices on the PO (Amount minus Expenses, like in the validation), `Remaining` is the budget of all rows with the same PO ID minus `Invoiced`. A negative remaining budget is highlighted in red.
 
+**Create quote…** works like creating an invoice, for a row of the Quotes tab: it validates the row (required fields, ID following from issue date and number, unique ID and number, client with address, totals, expiry date), copies the quote template, writes the quote data as fixed values, sets the quote ID, valid-until date and description, resizes the spacer row so the footer stays at the bottom, exports the PDF into the output folder and optionally creates a Gmail draft. The recipient is taken from an optional `Quote email` column in the Clients tab, else from `Invoice email`. The same function is in the **Quote** tab of the web app.
+
+The quote template is a Google Sheet built like the invoice template (the easiest start is a copy of it). Set its link under Settings (`Quote template`). It needs:
+
+- a tab `Quote` that is exported as PDF, with the description in the row whose column E contains the formula `=Data!F2` and the footer in the row whose column B contains `=Config!B20`;
+- a tab `Config` with a row labelled `Quote ID` (the script writes the ID into column B) and optionally a row `Valid until`;
+- a tab `Data`, which the script replaces with fixed values: `ID`, `Client`, `Issue date`, `Expiry date`, `Assignment`, `Amount`, `Tax`, `Amount with tax`, `Address`;
+- optionally a tab `Message` with the mail subject in `A1` and the body in `A3`.
+
+Tab names and markers are in `Config.js` (`quoteTemplate`). There is no expenses row in a quote.
+
 **Check all invoices…** validates every row in the Invoices tab and lists errors and warnings.
 
 **Highlight inconsistent values…** adds conditional formatting rules to the Business sheet. Cells turn red when a quote does not belong to the client, a PO does not match quote and client, an invoice ID does not follow from date, number and quote, an invoice number is used twice, or a time entry or expense points to an invoice of another client. The rules are part of the sheet and work without the script.
